@@ -1,0 +1,29 @@
+import org.springframework.web.bind.annotation._
+
+@RestController
+@RequestMapping(Array("/rsa"))
+class RsaController {
+
+  // Generate keys once - in a real app, store and load keys securely
+  val keyPair = RSAUtil.generateKeyPair()
+  val publicKeyStr = Base64.getEncoder.encodeToString(keyPair.getPublic.getEncoded)
+  val privateKeyStr = Base64.getEncoder.encodeToString(keyPair.getPrivate.getEncoded)
+
+  @GetMapping(Array("/keys"))
+  def getKeys(): Map[String, String] = Map(
+    "publicKey" -> publicKeyStr,
+    "privateKey" -> privateKeyStr
+  )
+
+  @PostMapping(Array("/encrypt"))
+  def encryptText(@RequestBody plainText: String): Map[String, String] = {
+    val encrypted = RSAUtil.encrypt(plainText, keyPair.getPublic)
+    Map("encrypted" -> encrypted)
+  }
+
+  @PostMapping(Array("/decrypt"))
+  def decryptText(@RequestBody cipherText: String): Map[String, String] = {
+    val decrypted = RSAUtil.decrypt(cipherText, keyPair.getPrivate)
+    Map("decrypted" -> decrypted)
+  }
+}
